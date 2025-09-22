@@ -1,15 +1,61 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ------------------------------
+# Gradle
+# ------------------------------
+.gradle/
+build/
+**/build/
+
+# Local configuration (SDK path, keys, etc.)
 local.properties
+
+# ------------------------------
+# Android Studio / IntelliJ
+# ------------------------------
+*.iml
+.idea/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# ------------------------------
+# OS files
+# ------------------------------
+.DS_Store
+Thumbs.db
+
+# ------------------------------
+# Android build outputs
+# ------------------------------
+*.log
+*.aab
+*.apk
+output-metadata.json
+
+# ------------------------------
+# Android Studio generated
+# ------------------------------
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ------------------------------
+# Keystore (NO subir nunca claves)
+# ------------------------------
+*.jks
+*.keystore
+
+# ------------------------------
+# Google Services (Firebase, etc.)
+# ------------------------------
+google-services.json
+
+# ------------------------------
+# Profiling
+# ------------------------------
+*.hprof
