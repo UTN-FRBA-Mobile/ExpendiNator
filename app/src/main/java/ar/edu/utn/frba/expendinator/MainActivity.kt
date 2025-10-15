@@ -13,8 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                val vm: ExpenseListViewModel = viewModel()
-                ExpenseListScreen(viewModel = vm)
+                AppNavHost()
             }
         }
     }

@@ -42,9 +42,11 @@ android {
 dependencies {
 
     implementation(platform("androidx.compose:compose-bom:2024.09.02"))
+    implementation("androidx.navigation:navigation-compose:2.8.3")
     // UI Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(libs.androidx.compose.foundation)
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Material3 (sin versión porque la toma del BOM)

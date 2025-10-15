@@ -14,4 +14,16 @@ class ExpenseListViewModel : ViewModel() {
         )
     )
     val uiState: StateFlow<List<Expense>> = _uiState
+
+    val categories = listOf("Comidas", "Transporte", "Salidas", "Supermercado", "Salud")
+
+    fun getById(id: String): Expense? = _uiState.value.firstOrNull {it.id == id}
+
+    fun update(expense: Expense){
+        _uiState.value = _uiState.value.map { if (it.id == expense.id) expense else it }
+    }
+
+    fun delete(id: String){
+        _uiState.value = _uiState.value.filterNot { it.id == id }
+    }
 }
