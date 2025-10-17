@@ -26,7 +26,8 @@ import androidx.core.content.ContextCompat
 fun ExpenseListScreen(
     viewModel: ExpenseListViewModel,
     onAddClicked: () -> Unit = {},
-    onExpenseClicked: (Expense) -> Unit = {}
+    onExpenseClicked: (Expense) -> Unit = {},
+    setFabAction: ((() -> Unit) -> Unit)? = null
 ) {
     val expenses by viewModel.uiState.collectAsState()
 
@@ -66,62 +67,57 @@ fun ExpenseListScreen(
         onAddClicked() // opcional para tracking/navegación futura
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Gastos") }) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onFabClick) {
-                Text("+")
+    LaunchedEffect(Unit) {
+        setFabAction?.invoke { onFabClick() }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        if (expenses.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Sin gastos todavía")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(expenses, key = { it.id }) { e ->
+                    ExpenseItem(e, onClick = { onExpenseClicked(e) })
+                }
             }
         }
-    ) { inner ->
-        Column(
-            modifier = Modifier
-                .padding(inner)
-                .fillMaxSize()
-        ) {
-            if (expenses.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Sin gastos todavía")
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(expenses, key = { it.id }) { e ->
-                        ExpenseItem(e, onClick = { onExpenseClicked(e) })
-                    }
-                }
-            }
 
-            // Preview chiquita de la última foto capturada (opcional)
-            photo?.let {
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Foto capturada",
-                        modifier = Modifier.size(96.dp)
-                    )
-                    Text("Última captura lista para OCR")
-                }
+        // Preview chiquita de la última foto capturada (opcional)
+        photo?.let {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Foto capturada",
+                    modifier = Modifier.size(96.dp)
+                )
+                Text("Última captura lista para OCR")
             }
         }
     }
+
 }
 
 @Composable
