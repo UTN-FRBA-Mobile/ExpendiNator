@@ -19,6 +19,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -101,7 +102,6 @@ fun AppNavHost() {
                     }
                 }
             }
-
         ) { innerPadding ->
             NavHost(
                 navController = nav,
@@ -158,8 +158,15 @@ fun AppNavHost() {
                     )
                 }
 
+                // Pantalla Principal
+                composable(Dest.Categories.route) {
+                    CategoryCreateScreen(
+                        viewModel = vm,
+                        onSaved = { nav.popBackStack() }
+                    )
+                }
+
                 composable(Dest.Budget.route)    { PlaceholderScreen("Presupuestos") }
-                composable(Dest.Categories.route)    { PlaceholderScreen("Categorias") }
                 composable(Dest.Metrics.route)    { PlaceholderScreen("Metricas") }
             }
         }

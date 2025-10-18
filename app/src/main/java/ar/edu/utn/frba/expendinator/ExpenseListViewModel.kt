@@ -36,4 +36,9 @@ class ExpenseListViewModel : ViewModel() {
     fun delete(id: String){
         _uiState.value = _uiState.value.filterNot { it.id == id }
     }
+
+    fun addCategory(category: Category){
+        category.id = _categories.last().id + 1
+        _categories.add(category)
+    }
 }
