@@ -160,6 +160,7 @@ fun AppNavHost() {
 
                 composable(Dest.Budget.route)    { PlaceholderScreen("Presupuestos") }
                 composable(Dest.Categories.route)    { PlaceholderScreen("Categorias") }
+                composable(Dest.Metrics.route)    { PlaceholderScreen("Metricas") }
             }
         }
     }

@@ -1,7 +1,9 @@
 package ar.edu.utn.frba.expendinator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -16,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
@@ -47,7 +50,8 @@ fun ExpenseDetailScreen(
 
     var title by rememberSaveable { mutableStateOf(expense.title) }
     var amountText by rememberSaveable { mutableStateOf(expense.amount.toString()) }
-    var category by rememberSaveable { mutableStateOf(expense.category) }
+    var selectedCategory by remember { mutableStateOf<Category?>(expense.category) }
+
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -60,14 +64,14 @@ fun ExpenseDetailScreen(
             return
         }
 
-        viewModel.update(expense.copy(title = title.trim(), amount = amount, category = category))
+        viewModel.update(expense.copy(title = title.trim(), amount = amount, category = selectedCategory))
         isEditing = false
     }
 
     fun cancelEdit() {
         title = expense.title
         amountText = expense.amount.toString()
-        category = expense.category
+        selectedCategory = expense.category
         isEditing = false
     }
 
@@ -121,26 +125,62 @@ fun ExpenseDetailScreen(
             onExpandedChange = { if (isEditing) expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = category,
+                value = selectedCategory?.name ?: "Sin categoría",
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Categoría") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                leadingIcon = {
+                    // puntito de color
+                    Box(
+                        Modifier
+                            .size(16.dp)
+                            .background(
+                                color = selectedCategory?.let { Color(it.color) } ?: Color.LightGray,
+                                shape = CircleShape
+                            )
+                    )
+                },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth(),
-                enabled = true,
+                enabled = true // dejamos true para que pueda abrir; controlamos con isEditing arriba
             )
 
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                viewModel.categories.forEach { opt ->
+                // Opción "Sin categoría"
+                DropdownMenuItem(
+                    leadingIcon = {
+                        Box(
+                            Modifier
+                                .size(14.dp)
+                                .background(Color.LightGray, CircleShape)
+                        )
+                    },
+                    text = { Text("Sin categoría") },
+                    onClick = {
+                        selectedCategory = null
+                        expanded = false
+                    },
+                    enabled = isEditing
+                )
+
+                // Resto de categorías
+                viewModel.categories.forEach { cat ->
                     DropdownMenuItem(
-                        text = { Text(opt) },
+                        leadingIcon = {
+                            Box(
+                                Modifier
+                                    .size(14.dp)
+                                    .background(Color(cat.color), CircleShape)
+                            )
+                        },
+                        text = { Text(cat.name) },
                         onClick = {
-                            category = opt
+                            selectedCategory = cat
                             expanded = false
                         },
                         enabled = isEditing
