@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.expendinator
+package ar.edu.utn.frba.expendinator.screens.expenses
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import ar.edu.utn.frba.expendinator.models.Category
+import ar.edu.utn.frba.expendinator.models.Expense
 import java.text.SimpleDateFormat
 import java.util.Locale
 

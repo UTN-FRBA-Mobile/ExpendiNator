@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.expendinator
+package ar.edu.utn.frba.expendinator.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build

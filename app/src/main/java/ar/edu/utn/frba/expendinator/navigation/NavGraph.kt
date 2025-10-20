@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.expendinator
+package ar.edu.utn.frba.expendinator.navigation
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -19,12 +19,17 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import ar.edu.utn.frba.expendinator.screens.budgets.BudgetScreen
+import ar.edu.utn.frba.expendinator.screens.budgets.BudgetViewModel
+import ar.edu.utn.frba.expendinator.screens.categories.CategoryCreateScreen
+import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseDetailScreen
+import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListScreen
+import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +37,7 @@ import kotlinx.coroutines.launch
 fun AppNavHost() {
     val nav = rememberNavController()
     val vm: ExpenseListViewModel = viewModel()
+    val budgetVm: BudgetViewModel = viewModel()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -115,7 +121,7 @@ fun AppNavHost() {
                         onExpenseClicked = { expense ->
                             nav.navigate("detail/${expense.id}")
                         },
-                        setFabAction = {action -> fabAction = action }
+                        setFabAction = { action -> fabAction = action }
 
                     )
                 }
@@ -153,7 +159,8 @@ fun AppNavHost() {
 
                         onEditingChanged = { detailIsEditing = it },
                         setAppBarHandlers = { save, cancel, startEdit, delete ->
-                            onSave = save; onCancel = cancel; onStartEdit = startEdit; onDelete = delete
+                            onSave = save; onCancel = cancel; onStartEdit = startEdit; onDelete =
+                            delete
                         }
                     )
                 }
@@ -166,7 +173,17 @@ fun AppNavHost() {
                     )
                 }
 
-                composable(Dest.Budget.route)    { PlaceholderScreen("Presupuestos") }
+                // Pantalla Presupuestos
+                composable(Dest.Budget.route) {
+                    BudgetScreen(
+                        budgetVm = budgetVm,
+                        expensesVm = vm,
+                        onNew = { nav.navigate("budget/new") },
+                    )
+                }
+
+                composable("budget/new") { PlaceholderScreen("Nuevo presupuesto") }
+
                 composable(Dest.Metrics.route)    { PlaceholderScreen("Metricas") }
             }
         }

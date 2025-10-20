@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.expendinator
+package ar.edu.utn.frba.expendinator.models
 
 data class Category (
     var id: String,

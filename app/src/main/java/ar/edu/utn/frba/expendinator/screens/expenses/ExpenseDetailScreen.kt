@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.expendinator
+package ar.edu.utn.frba.expendinator.screens.expenses
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,14 +13,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.expendinator.models.Category
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -204,7 +205,7 @@ fun ExpenseDetailScreen(
             title = { Text("Eliminar gasto") },
             text = { Text("¿Seguro que querés borrar este gasto?") },
             confirmButton = {
-                androidx.compose.material3.TextButton(
+                TextButton(
                     onClick = {
                         viewModel.delete(expense.id)
                         showDeleteDialog = false
@@ -212,7 +213,7 @@ fun ExpenseDetailScreen(
                 ) { Text("Borrar") }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(
+                TextButton(
                     onClick = { showDeleteDialog = false }
                 ) { Text("Cancelar") }
             }
