@@ -8,3 +8,4 @@ budgetRouter.get("/", verifyToken, BudgetController.getAll);
 budgetRouter.post("/", verifyToken, BudgetController.create);
 budgetRouter.put("/:id", verifyToken, BudgetController.update);
 budgetRouter.delete("/:id", verifyToken, BudgetController.remove);
+budgetRouter.get("/usage", verifyToken, BudgetController.usage);

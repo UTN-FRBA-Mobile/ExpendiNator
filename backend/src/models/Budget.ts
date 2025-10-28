@@ -17,6 +17,21 @@ export interface Budget {
   };
 }
 
+export interface BudgetUsageRow {
+  id: number;
+  user_id: number;
+  category_id: number;
+  limit_amount: number;
+  period: BudgetPeriod;
+  start_date: string; // YYYY-MM-DD
+  end_date: string; // YYYY-MM-DD
+  category_name: string;
+  category_color: number | null;
+  spent: number; // suma de expenses en el periodo,
+  eff_start_date: string; // effective window (override con from/to si vienen)
+  eff_end_date: string;
+}
+
 export const BudgetModel = {
   async getAllByUser(userId: number) {
     const [rows] = await pool.query(
@@ -145,5 +160,65 @@ export const BudgetModel = {
       [id, userId]
     );
     return (result as any).affectedRows > 0;
+  },
+
+  async getUsageByUser(
+    userId: number,
+    opts?: { activeOnly?: boolean; from?: string | null; to?: string | null }
+  ): Promise<BudgetUsageRow[]> {
+    const activeOnly = !!opts?.activeOnly;
+    const from = opts?.from ?? null; // YYYY-MM-DD o null
+    const to = opts?.to ?? null;
+
+    const whereActive = activeOnly
+      ? "AND CURDATE() BETWEEN COALESCE(?, b.start_date) AND COALESCE(?, b.end_date)"
+      : "";
+
+    const sql = `
+      SELECT
+        b.id,
+        b.user_id,
+        b.category_id,
+        b.limit_amount,
+        b.period,
+        DATE_FORMAT(b.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(b.end_date,   '%Y-%m-%d') AS end_date,
+        DATE_FORMAT(COALESCE(?, b.start_date), '%Y-%m-%d') AS eff_start_date,
+        DATE_FORMAT(COALESCE(?, b.end_date),   '%Y-%m-%d') AS eff_end_date,
+        c.name  AS category_name,
+        c.color AS category_color,
+        COALESCE(SUM(e.amount), 0) AS spent
+      FROM budgets b
+      JOIN categories c
+        ON c.id = b.category_id
+      LEFT JOIN expenses e
+        ON e.user_id = b.user_id
+       AND e.category_id = b.category_id
+       AND e.date BETWEEN COALESCE(?, b.start_date) AND COALESCE(?, b.end_date)
+      WHERE b.user_id = ?
+      ${whereActive}
+      GROUP BY b.id
+      ORDER BY b.start_date DESC, c.name ASC
+    `;
+
+    const params: any[] = [from, to, from, to, userId];
+    if (activeOnly) params.push(from, to);
+
+    const [rows] = await pool.query(sql, params);
+
+    return (rows as any[]).map((r) => ({
+      id: r.id,
+      user_id: r.user_id,
+      category_id: r.category_id,
+      limit_amount: Number(r.limit_amount),
+      period: r.period as BudgetPeriod,
+      start_date: r.start_date,
+      end_date: r.end_date,
+      eff_start_date: r.eff_start_date,
+      eff_end_date: r.eff_end_date,
+      category_name: r.category_name,
+      category_color: r.category_color ?? null,
+      spent: Number(r.spent),
+    }));
   },
 };

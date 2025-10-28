@@ -8,3 +8,4 @@ expenseRouter.get("/", verifyToken, ExpenseController.getAll);
 expenseRouter.post("/", verifyToken, ExpenseController.create);
 expenseRouter.put("/:id", verifyToken, ExpenseController.update);
 expenseRouter.delete("/:id", verifyToken, ExpenseController.remove);
+expenseRouter.get("/summary", verifyToken, ExpenseController.summary);

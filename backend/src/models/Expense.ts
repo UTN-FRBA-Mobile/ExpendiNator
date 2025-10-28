@@ -14,6 +14,13 @@ export interface Expense {
   } | null;
 }
 
+export interface ExpenseSummaryRow {
+  category_id: number | null;
+  category_name: string;
+  category_color: number | null;
+  amount: number;
+}
+
 export const ExpenseModel = {
   async getAllByUser(userId: number) {
     const [rows] = await pool.query(
@@ -98,5 +105,36 @@ export const ExpenseModel = {
       [id, userId]
     );
     return (rows as any[])[0] || null;
+  },
+
+  async getSummaryByUser(
+    userId: number,
+    from?: string | null, // YYYY-MM-DD
+    to?: string | null // YYYY-MM-DD
+  ): Promise<ExpenseSummaryRow[]> {
+    const sql = `
+      SELECT
+        e.category_id,
+        COALESCE(c.name, 'Sin categoría')      AS category_name,
+        c.color                                 AS category_color,
+        SUM(e.amount)                           AS amount
+      FROM expenses e
+      LEFT JOIN categories c ON c.id = e.category_id
+      WHERE e.user_id = ?
+        AND (? IS NULL OR e.date >= ?)
+        AND (? IS NULL OR e.date <= ?)
+      GROUP BY e.category_id
+      ORDER BY amount DESC;
+    `;
+
+    const params = [userId, from ?? null, from ?? null, to ?? null, to ?? null];
+    const [rows] = await pool.query(sql, params);
+
+    return (rows as any[]).map((r) => ({
+      category_id: r.category_id ?? null,
+      category_name: r.category_name,
+      category_color: r.category_color ?? null,
+      amount: Number(r.amount),
+    }));
   },
 };
