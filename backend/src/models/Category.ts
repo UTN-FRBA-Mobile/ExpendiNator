@@ -22,7 +22,7 @@ export const CategoryModel = {
     );
 
     // Transformar la lista en arrays
-    return (rows as any[]).map(r => ({
+    return (rows as any[]).map((r) => ({
       id: r.id,
       name: r.name,
       color: r.color,
@@ -42,8 +42,11 @@ export const CategoryModel = {
       const categoryId = (result as any).insertId;
 
       if (category.keywords?.length) {
-        const values = category.keywords.map(k => [categoryId, k]);
-        await conn.query("INSERT INTO category_keywords (category_id, keyword) VALUES ?", [values]);
+        const values = category.keywords.map((k) => [categoryId, k]);
+        await conn.query(
+          "INSERT INTO category_keywords (category_id, keyword) VALUES ?",
+          [values]
+        );
       }
 
       await conn.commit();
@@ -62,5 +65,13 @@ export const CategoryModel = {
       [id, userId]
     );
     return (result as any).affectedRows > 0;
+  },
+
+  async findByName(userId: number, name: string) {
+    const [rows] = await pool.query(
+      `SELECT id, name, color FROM categories WHERE user_id = ? AND name = ? LIMIT 1`,
+      [userId, name]
+    );
+    return (rows as any[])[0] ?? null;
   },
 };
