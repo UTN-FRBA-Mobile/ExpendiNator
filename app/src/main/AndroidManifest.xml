@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Permiso de cámara -->
-    <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Declaración del feature de cámara -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- (Opcional) Cámara: borralo si no la usás -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -17,14 +18,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Expendinator">
-
+        android:theme="@style/Theme.Expendinator"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
 
         <activity
             android:name="ar.edu.utn.frba.expendinator.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Expendinator">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -32,5 +33,4 @@
         </activity>
 
     </application>
-
 </manifest>
