@@ -41,7 +41,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
-                val response = client.post("$baseUrl/login") {
+                val response = client.post("$baseUrl/auth/login") {
                     contentType(ContentType.Application.Json)
                     headers.append(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     setBody(LoginRequest(email = email, password = password))
@@ -72,7 +72,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
-                val response = client.post("$baseUrl/register") {
+                val response = client.post("$baseUrl/auth/register") {
                     contentType(ContentType.Application.Json)
                     headers.append(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     setBody(LoginRequest(email = email, password = password))

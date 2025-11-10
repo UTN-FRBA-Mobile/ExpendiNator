@@ -1,20 +1,21 @@
+-- Crea la base (ajustá el nombre según tu .env)
 CREATE DATABASE IF NOT EXISTS expendinatordb
-    DEFAULT CHARACTER SET utf8mb4
-    DEFAULT COLLATE utf8mb4_unicode_ci;
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_unicode_ci;
+
 USE expendinatordb;
 
 -- =========================
--- Users
+-- Tabla: users
 -- =========================
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
-
 
 -- =========================
 -- Tabla: categories
@@ -23,7 +24,7 @@ CREATE TABLE IF NOT EXISTS categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   name VARCHAR(100) NOT NULL,
-  color BIGINT NULL,  -- ARGB como Long (ej: 0xFF9EC5FE)
+  color BIGINT NULL, -- ARGB como Long (ej: 0xFF9EC5FE)
   CONSTRAINT uq_category_user_name UNIQUE (user_id, name),
   INDEX ix_categories_user (user_id),
   CONSTRAINT fk_categories_user
@@ -53,7 +54,6 @@ CREATE TABLE IF NOT EXISTS category_keywords (
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
-
 -- =========================
 -- Tabla: expenses
 -- =========================
@@ -76,7 +76,6 @@ CREATE TABLE IF NOT EXISTS expenses (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
-
 
 -- =========================
 -- Tabla: budgets
