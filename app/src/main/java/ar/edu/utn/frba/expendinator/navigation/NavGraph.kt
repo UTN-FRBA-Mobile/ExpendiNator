@@ -53,6 +53,8 @@ import ar.edu.utn.frba.expendinator.screens.categories.CategoryCreateScreen
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseDetailScreen
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListScreen
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
+import ar.edu.utn.frba.expendinator.screens.expenses.OcrReviewScreen
+import ar.edu.utn.frba.expendinator.screens.expenses.OcrViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class) // <- evita el warning/error de API experimental
@@ -79,6 +81,8 @@ fun AppNavHost() {
     var detailIsEditing by rememberSaveable { mutableStateOf(false) }
 
     var fabAction by remember { mutableStateOf<() -> Unit>({}) }
+
+    val ocrVm: OcrViewModel = viewModel()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -172,10 +176,9 @@ fun AppNavHost() {
                 composable(Dest.Main.route) {
                     ExpenseListScreen(
                         viewModel = vm,
-                        onExpenseClicked = { expense ->
-                            nav.navigate("detail/${expense.id}")
-                        },
-                        setFabAction = { action -> fabAction = action }
+                        onExpenseClicked = { expense -> nav.navigate("detail/${expense.id}") },
+                        setFabAction = { action -> fabAction = action },
+                        onAddClicked = { nav.navigate(Dest.OcrReview.route) }
                     )
                 }
 
@@ -245,6 +248,19 @@ fun AppNavHost() {
 
                 composable("budget/new") { PlaceholderScreen("Nuevo presupuesto") }
                 composable(Dest.Metrics.route) { PlaceholderScreen("Metricas") }
+
+                composable(Dest.OcrReview.route) {
+                    OcrReviewScreen(
+                        ocrVm,
+                        onConfirmed = {
+                            // Volvemos al home y podrías refrescar gastos
+                            nav.navigate(Dest.Main.route) {
+                                popUpTo(Dest.Main.route) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
             }
         }
     }

@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +50,10 @@ fun ExpenseListScreen(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         photo = bitmap
-        // TODO: convertir a ByteArray y mandar al backend para OCR
+        // Aquí simulamos "foto lista": ahora navegamos a la pantalla OCR
+        if (bitmap != null) {
+            onAddClicked()
+        }
     }
 
     // Pide permiso de cámara
@@ -60,7 +67,6 @@ fun ExpenseListScreen(
     // Context disponible en composición
     val context = LocalContext.current
 
-
     val onFabClick = {
         val granted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
@@ -71,7 +77,7 @@ fun ExpenseListScreen(
         } else {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
-        onAddClicked() // opcional para tracking/navegación futura
+        // No navegamos acá; navegamos cuando llega el bitmap (arriba)
     }
 
     LaunchedEffect(Unit) {
@@ -124,12 +130,11 @@ fun ExpenseListScreen(
             }
         }
     }
-
 }
 
 @Composable
 private fun ExpenseItem(e: Expense, onClick: () -> Unit) {
-    val dateText = remember(e.date){
+    val dateText = remember(e.date) {
         runCatching {
             val parser = SimpleDateFormat("yyyy-MM-dd", Locale("es", "AR"))
             val formatter = SimpleDateFormat("d MMM yyyy", Locale("es", "AR"))
@@ -175,9 +180,8 @@ private fun ExpenseItem(e: Expense, onClick: () -> Unit) {
     }
 }
 
-
 @Composable
-private fun CategoryTag(category: Category){
+private fun CategoryTag(category: Category) {
     val bg = Color(category.color) // color AARRGGBB (Long)
     val textColor = if (bg.luminance() > 0.5f) Color.Black else Color.White
 

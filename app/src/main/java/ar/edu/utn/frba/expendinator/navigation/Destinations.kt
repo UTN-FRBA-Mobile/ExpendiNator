@@ -14,7 +14,7 @@ sealed class Dest(val route: String, val label: String? = null, val icon: ImageV
     data object Budget: Dest("budget","Presupuestos", Icons.Default.ShoppingCart)
     data object Categories: Dest("categories","Categorias", Icons.Default.Build)
     data object Metrics: Dest("metrics","Métricas", Icons.Default.DateRange)
-
+    data object OcrReview: Dest("ocrReview", "Revisar OCR", Icons.Default.ShoppingCart)
 
     companion object {
         val drawerItems = listOf(Main, Budget, Categories, Metrics)
