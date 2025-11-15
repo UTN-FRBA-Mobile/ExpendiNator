@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,39 +45,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import ar.edu.utn.frba.expendinator.models.Category
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 import ar.edu.utn.frba.expendinator.utils.showErrorToast
 import ar.edu.utn.frba.expendinator.utils.showSuccessToast
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryCreateScreen(
     viewModel: ExpenseListViewModel,
     onSaved: () -> Unit,
-){
+) {
     var name by rememberSaveable { mutableStateOf("") }
     val keywords = remember { mutableStateListOf("") }
     var selectedColor by rememberSaveable { mutableLongStateOf(0xFF9EC5FEL) }
 
-    fun removeKeyword(index: Int){
-        if(keywords.size > 1) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    fun removeKeyword(index: Int) {
+        if (keywords.size > 1) {
             keywords.removeAt(index)
         }
     }
-
-    val context = LocalContext.current
-
 
     Column(
         modifier = Modifier
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
-    ){
+    ) {
         OutlinedTextField(
             value = name,
-            onValueChange = {name = it},
+            onValueChange = { name = it },
             label = { Text("Nombre") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -84,7 +85,8 @@ fun CategoryCreateScreen(
 
         Text("Color", style = MaterialTheme.typography.labelLarge)
         val colorOptions = longListOf(
-            0xFF9EC5FEL, 0xFFFECBA1L, 0xFFA3CFBBL, 0xFFF1AEB5L, 0xFFE2C6FEL, 0xFFFFD966L
+            0xFF9EC5FEL, 0xFFFECBA1L, 0xFFA3CFBBL,
+            0xFFF1AEB5L, 0xFFE2C6FEL, 0xFFFFD966L
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -98,7 +100,10 @@ fun CategoryCreateScreen(
                         .background(Color(color), CircleShape)
                         .border(
                             width = if (selected) 3.dp else 1.dp,
-                            color = if (selected) MaterialTheme.colorScheme.onSurface else Color.Gray,
+                            color = if (selected)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                Color.Gray,
                             shape = CircleShape
                         )
                         .clickable { selectedColor = color }
@@ -120,7 +125,12 @@ fun CategoryCreateScreen(
                         onClick = { removeKeyword(index) },
                         enabled = keywords.size > 1,
                         modifier = Modifier.size(24.dp)
-                    ) { Icon(Icons.Default.Delete, contentDescription = "Eliminar palabra clave" ) }
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Eliminar palabra clave"
+                        )
+                    }
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
@@ -129,11 +139,10 @@ fun CategoryCreateScreen(
                     }
                 )
             )
-
         }
 
         TextButton(onClick = { keywords.add("") }) {
-            Icon(Icons.Default.Add, contentDescription = null )
+            Icon(Icons.Default.Add, contentDescription = null)
             Spacer(Modifier.width(6.dp))
             Text("Agregar palabra clave")
         }
@@ -142,29 +151,44 @@ fun CategoryCreateScreen(
 
         Button(
             onClick = {
-                if (name.isBlank()){
+                if (name.isBlank()) {
                     showErrorToast(context, "El nombre es requerido.")
                     return@Button
                 }
 
-                viewModel.addCategory(Category("0", name, keywords, selectedColor))
+                val cleanedKeywords = keywords
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
 
-                showSuccessToast(context, "Categoría guardada correctamente.")
+                scope.launch {
+                    val ok = viewModel.createCategory(
+                        name = name.trim(),
+                        color = selectedColor,
+                        keywords = cleanedKeywords
+                    )
+                    if (ok) {
+                        showSuccessToast(
+                            context,
+                            "Categoría guardada correctamente."
+                        )
 
+                        name = ""
+                        keywords.clear()
+                        keywords.add("")
+                        selectedColor = 0xFF9EC5FEL
 
-                name = ""
-                keywords.clear()
-                keywords.add("")
-                selectedColor = 0xFF9EC5FEL
-
-                onSaved()
-
+                        onSaved()
+                    } else {
+                        showErrorToast(
+                            context,
+                            "No se pudo guardar la categoría."
+                        )
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Guardar")
         }
-
     }
-
 }
