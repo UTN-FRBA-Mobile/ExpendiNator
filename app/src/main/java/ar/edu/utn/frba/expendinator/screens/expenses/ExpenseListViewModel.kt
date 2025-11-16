@@ -149,32 +149,126 @@ class ExpenseListViewModel : ViewModel() {
             false
         }
     }
-}
+    private fun ExpenseResponse.toModel(categories: List<Category>): Expense {
+        val catIdStr = category_id?.toString()
+        val existing = categories.firstOrNull { it.id == catIdStr }
 
-/**
- * Helper para mapear del DTO del backend al modelo de UI.
- */
-private fun ExpenseResponse.toModel(categories: List<Category>): Expense {
-    val catIdStr = category_id?.toString()
-    val existing = categories.firstOrNull { it.id == catIdStr }
+        val cat = when {
+            existing != null -> existing
+            category_id != null && category_name != null && category_color != null ->
+                Category(
+                    id = category_id.toString(),
+                    name = category_name,
+                    keywords = emptyList(),
+                    color = category_color
+                )
+            else -> null
+        }
 
-    val cat = when {
-        existing != null -> existing
-        category_id != null && category_name != null && category_color != null ->
-            Category(
-                id = category_id.toString(),
-                name = category_name,
-                keywords = emptyList(),
-                color = category_color
-            )
-        else -> null
+        return Expense(
+            id = id.toString(),
+            title = title,
+            amount = amount,
+            category = cat,
+            date = date
+        )
+    }
+    /**
+     * Calcula el total gastado hoy
+     */
+    fun getTotalToday(): Double {
+        val today = java.time.LocalDate.now()
+        android.util.Log.d("WidgetDebug", "Hoy es: $today")
+
+        return uiState.value
+            .filter { expense ->
+                try {
+                    // Extraer solo la fecha (YYYY-MM-DD) del timestamp
+                    val expenseDate = expense.date.take(10) // "2025-11-16T03:00..." -> "2025-11-16"
+                    val parsed = java.time.LocalDate.parse(expenseDate)
+                    val isToday = parsed == today
+
+                    android.util.Log.d("WidgetDebug", "Gasto: ${expense.title}, fecha: '$expenseDate', parsed: $parsed, isToday: $isToday")
+                    isToday
+                } catch (e: Exception) {
+                    android.util.Log.e("WidgetDebug", "Error parsing date: ${expense.date}", e)
+                    false
+                }
+            }
+            .sumOf { it.amount }
+            .also { android.util.Log.d("WidgetDebug", "Total hoy: $it") }
     }
 
-    return Expense(
-        id = id.toString(),
-        title = title,
-        amount = amount,
-        category = cat,
-        date = date
-    )
+    /**
+     * Calcula el total gastado en los últimos 7 días
+     */
+    fun getTotalWeek(): Double {
+        val today = java.time.LocalDate.now()
+        val weekAgo = today.minusDays(7)
+
+        return uiState.value
+            .filter {
+                try {
+                    // Extraer solo la fecha (YYYY-MM-DD) del timestamp
+                    val expenseDate = it.date.take(10)
+                    val parsed = java.time.LocalDate.parse(expenseDate)
+                    parsed.isAfter(weekAgo.minusDays(1)) &&
+                            parsed.isBefore(today.plusDays(1))
+                } catch (e: Exception) {
+                    false
+                }
+            }
+            .sumOf { it.amount }
+    }
+
+    /**
+     * Obtiene los últimos N gastos formateados
+     */
+    fun getLastExpenses(count: Int = 3): List<String> {
+        val sorted = uiState.value
+            .sortedByDescending { expense ->
+                // Ordenar por ID (más alto = más reciente)
+                expense.id.toIntOrNull() ?: 0
+            }
+
+        android.util.Log.d("LastExpenses", "=== Últimos gastos (ordenados por ID) ===")
+        sorted.take(count).forEach { expense ->
+            android.util.Log.d("LastExpenses", "ID: ${expense.id}, Título: ${expense.title}")
+        }
+
+        return sorted
+            .take(count)
+            .map { "${it.title} - $${String.format("%.2f", it.amount)}" }
+    }
+
+    /**
+     * Guarda los totales en SharedPreferences para que el widget los lea
+     */
+    fun saveWidgetData(context: android.content.Context) {
+        val prefs = context.getSharedPreferences("widget_data", android.content.Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putString("total_today", String.format("%.2f", getTotalToday()))
+            putString("total_week", String.format("%.2f", getTotalWeek()))
+
+            val expenses = getLastExpenses(3)
+            putString("expense_1", expenses.getOrNull(0) ?: "")
+            putString("expense_2", expenses.getOrNull(1) ?: "")
+            putString("expense_3", expenses.getOrNull(2) ?: "")
+
+            apply()
+        }
+        android.util.Log.d("WidgetData", "Datos guardados, actualizando widget...")
+        updateWidget(context)
+    }
+
+    private fun updateWidget(context: android.content.Context) {
+        val intent = android.content.Intent(context, ar.edu.utn.frba.ExpendinatorApp.widget.ExpendinatorWidget::class.java)
+        intent.action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        val ids = android.appwidget.AppWidgetManager.getInstance(context)
+            .getAppWidgetIds(android.content.ComponentName(context, ar.edu.utn.frba.ExpendinatorApp.widget.ExpendinatorWidget::class.java))
+        intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        context.sendBroadcast(intent)
+    }
 }
+
+

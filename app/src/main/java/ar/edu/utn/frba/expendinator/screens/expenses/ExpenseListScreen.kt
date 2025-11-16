@@ -42,6 +42,13 @@ fun ExpenseListScreen(
 ) {
     val expenses by viewModel.uiState.collectAsState()
 
+    val context = LocalContext.current
+
+    // Actualizar widget cada vez que cambien los gastos
+    LaunchedEffect(expenses) {
+        viewModel.saveWidgetData(context)
+    }
+
     // ---- Cámara: estado + launchers ----
     var photo by remember { mutableStateOf<Bitmap?>(null) }
 
@@ -65,7 +72,7 @@ fun ExpenseListScreen(
     }
 
     // Context disponible en composición
-    val context = LocalContext.current
+
 
     val onFabClick = {
         val granted = ContextCompat.checkSelfPermission(
