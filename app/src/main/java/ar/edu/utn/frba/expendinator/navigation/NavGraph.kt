@@ -44,6 +44,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import ar.edu.utn.frba.expendinator.data.remote.ApiClient
 import ar.edu.utn.frba.expendinator.screens.auth.AuthViewModel
 import ar.edu.utn.frba.expendinator.screens.auth.LoginScreen
 import ar.edu.utn.frba.expendinator.screens.auth.RegisterScreen
@@ -119,6 +120,22 @@ fun AppNavHost() {
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    icon = { Icon(Icons.Filled.Close, contentDescription = "Cerrar sesión") },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+
+                        ApiClient.logout()   // limpia token de memoria y SharedPreferences
+
+                        nav.navigate(Dest.Login.route) {
+                            popUpTo(nav.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
             }
         }
     ) {
