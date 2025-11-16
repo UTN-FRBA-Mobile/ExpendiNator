@@ -19,6 +19,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ExpenseListViewModel : ViewModel() {
@@ -31,6 +32,7 @@ class ExpenseListViewModel : ViewModel() {
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: List<Category> get() = _categories.value
+    val categoriesFlow: StateFlow<List<Category>> = _categories.asStateFlow()
 
     init {
         refreshAll()

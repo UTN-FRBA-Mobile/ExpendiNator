@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.expendinator.screens.expenses
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.utn.frba.expendinator.data.remote.ApiClient
@@ -18,7 +20,7 @@ import kotlinx.coroutines.launch
 sealed class OcrUiState {
     object Idle : OcrUiState()
     object Loading : OcrUiState()
-    data class Preview(val data: OcrPreview, val editable: MutableList<OcrItem>) : OcrUiState()
+    data class Preview(val data: OcrPreview, val editable: SnapshotStateList<OcrItem>) : OcrUiState()
     object Confirming : OcrUiState()
     object Confirmed : OcrUiState()
     data class Error(val message: String) : OcrUiState()
@@ -41,9 +43,12 @@ class OcrViewModel : ViewModel() {
                     return@launch
                 }
                 val preview = resp.body<OcrPreview>()
+                val editable = mutableStateListOf<OcrItem>().apply {
+                    addAll(preview.items.map { it.copy() })
+                }
                 _ui.value = OcrUiState.Preview(
                     data = preview,
-                    editable = preview.items.map { it.copy() }.toMutableList()
+                    editable = editable
                 )
             } catch (e: Exception) {
                 _ui.value = OcrUiState.Error(e.message ?: "Network error")
@@ -60,7 +65,7 @@ class OcrViewModel : ViewModel() {
             try {
                 val resp = client.post("$baseUrl/ocr/confirm") {
                     contentType(ContentType.Application.Json)
-                    setBody(OcrConfirmRequest(items = current.editable))
+                    setBody(OcrConfirmRequest(items = current.editable.toList()))
                 }
                 if (!resp.status.isSuccess()) {
                     _ui.value = OcrUiState.Error("Confirm failed (${resp.status.value})")

@@ -47,6 +47,7 @@ import androidx.navigation.navArgument
 import ar.edu.utn.frba.expendinator.screens.auth.AuthViewModel
 import ar.edu.utn.frba.expendinator.screens.auth.LoginScreen
 import ar.edu.utn.frba.expendinator.screens.auth.RegisterScreen
+import ar.edu.utn.frba.expendinator.screens.budgets.BudgetCreateScreen
 import ar.edu.utn.frba.expendinator.screens.budgets.BudgetScreen
 import ar.edu.utn.frba.expendinator.screens.budgets.BudgetViewModel
 import ar.edu.utn.frba.expendinator.screens.categories.CategoryCreateScreen
@@ -152,6 +153,8 @@ fun AppNavHost() {
                     LoginScreen(
                         viewModel = authVm,
                         onSuccess = {
+                            vm.refreshAll()
+                            budgetVm.refresh()
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Login.route) { inclusive = true }
                             }
@@ -164,6 +167,8 @@ fun AppNavHost() {
                     RegisterScreen(
                         viewModel = authVm,
                         onSuccess = {
+                            vm.refreshAll()
+                            budgetVm.refresh()
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Register.route) { inclusive = true }
                             }
@@ -246,14 +251,23 @@ fun AppNavHost() {
                     )
                 }
 
-                composable("budget/new") { PlaceholderScreen("Nuevo presupuesto") }
+                composable("budget/new") {
+                    BudgetCreateScreen(
+                        budgetVm = budgetVm,
+                        expensesVm = vm,
+                        onSaved = { nav.popBackStack() },
+                        onCancel = { nav.popBackStack() }
+                    )
+                }
                 composable(Dest.Metrics.route) { PlaceholderScreen("Metricas") }
 
                 composable(Dest.OcrReview.route) {
                     OcrReviewScreen(
                         ocrVm,
+                        expensesVm = vm,
                         onConfirmed = {
-                            // Volvemos al home y podrías refrescar gastos
+                            vm.refreshAll()
+                            budgetVm.refresh()
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Main.route) { inclusive = true }
                             }

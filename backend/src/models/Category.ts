@@ -74,4 +74,12 @@ export const CategoryModel = {
     );
     return (rows as any[])[0] ?? null;
   },
+
+  async findById(userId: number, id: number) {
+    const [rows] = await pool.query(
+      `SELECT id, name, color FROM categories WHERE user_id = ? AND id = ? LIMIT 1`,
+      [userId, id]
+    );
+    return (rows as any[])[0] ?? null;
+  },
 };

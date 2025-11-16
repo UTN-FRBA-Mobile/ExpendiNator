@@ -14,10 +14,15 @@ export const UserModel = {
     return result || null;
   },
 
-  async create(user: User): Promise<void> {
-    await pool.query("INSERT INTO users (email, password) VALUES (?, ?)", [
-      user.email,
-      user.password,
-    ]);
+  async create(user: User): Promise<number> {
+    const [result] = await pool.query(
+      "INSERT INTO users (email, password) VALUES (?, ?)",
+      [user.email, user.password]
+    );
+    return (result as any).insertId as number;
+  },
+
+  async deleteById(id: number): Promise<void> {
+    await pool.query("DELETE FROM users WHERE id = ?", [id]);
   },
 };

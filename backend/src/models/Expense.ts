@@ -7,11 +7,16 @@ export interface Expense {
   amount: number;
   date: string;
   category_id?: number | null;
-  category?: {
-    id: number;
-    name: string;
-    color?: number;
-  } | null;
+}
+
+export interface ExpenseWithCategoryRow {
+  id: number;
+  title: string;
+  amount: number;
+  date: string;
+  category_id: number | null;
+  category_name: string | null;
+  category_color: number | null;
 }
 
 export interface ExpenseSummaryRow {
@@ -33,15 +38,7 @@ export const ExpenseModel = {
       [userId]
     );
 
-    return (rows as any[]).map((r) => ({
-      id: r.id,
-      title: r.title,
-      amount: r.amount,
-      date: r.date,
-      category: r.category_id
-        ? { id: r.category_id, name: r.category_name, color: r.category_color }
-        : null,
-    }));
+    return (rows as ExpenseWithCategoryRow[]).map(mapRowToDto);
   },
 
   async create(expense: Expense) {
@@ -53,7 +50,8 @@ export const ExpenseModel = {
       [user_id, title, amount, date, category_id || null]
     );
 
-    return { id: (result as any).insertId, ...expense };
+    const id = (result as any).insertId as number;
+    return await ExpenseModel.findDtoByIdForUser(id, user_id);
   },
 
   async remove(id: number, userId: number) {
@@ -85,16 +83,8 @@ export const ExpenseModel = {
       [id, user_id]
     );
 
-    const r = (rows as any[])[0];
-    return {
-      id: r.id,
-      title: r.title,
-      amount: r.amount,
-      date: r.date,
-      category: r.category_id
-        ? { id: r.category_id, name: r.category_name, color: r.category_color }
-        : null,
-    };
+    const r = (rows as ExpenseWithCategoryRow[])[0];
+    return mapRowToDto(r);
   },
 
   async findByIdForUser(id: number, userId: number) {
@@ -105,6 +95,18 @@ export const ExpenseModel = {
       [id, userId]
     );
     return (rows as any[])[0] || null;
+  },
+
+  async findDtoByIdForUser(id: number, userId: number) {
+    const [rows] = await pool.query(
+      `SELECT e.id, e.title, e.amount, e.date,
+              c.id AS category_id, c.name AS category_name, c.color AS category_color
+         FROM expenses e
+         LEFT JOIN categories c ON e.category_id = c.id
+        WHERE e.id = ? AND e.user_id = ?`,
+      [id, userId]
+    );
+    return mapRowToDto((rows as ExpenseWithCategoryRow[])[0]);
   },
 
   async getSummaryByUser(
@@ -138,3 +140,17 @@ export const ExpenseModel = {
     }));
   },
 };
+
+function mapRowToDto(row?: ExpenseWithCategoryRow) {
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    title: row.title,
+    amount: Number(row.amount),
+    date: row.date,
+    category_id: row.category_id ?? null,
+    category_name: row.category_name ?? null,
+    category_color: row.category_color ?? null,
+  };
+}

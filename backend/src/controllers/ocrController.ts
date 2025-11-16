@@ -1,6 +1,14 @@
 import { Request, Response } from "express";
+import { DEFAULT_CATEGORIES } from "../config/defaultCategories.js";
+import { CategoryModel } from "../models/Category.js";
 
-type Item = { title: string; amount: number; category: string; date: string };
+type Item = {
+  title: string;
+  amount: number;
+  categoryId: number | null;
+  categoryName: string | null;
+  date: string;
+};
 
 const CATEGORY_TITLES: Record<string, string[]> = {
   "Supermercado": ["Leche 1L", "Pan lactal", "Queso cremoso", "Detergente", "Fideos", "Yerba"],
@@ -10,7 +18,7 @@ const CATEGORY_TITLES: Record<string, string[]> = {
   "Farmacia": ["Ibuprofeno", "Alcohol", "Jabón líquido", "Protector solar"],
 };
 
-const CATEGORY_LIST = Object.keys(CATEGORY_TITLES);
+type CategoryTemplate = { id: number | null; name: string; sampleTitles: string[] };
 
 function todayISO(): string {
   const d = new Date();
@@ -26,7 +34,38 @@ function pick<T>(arr: T[]) {
   return arr[rand(0, arr.length - 1)];
 }
 
-function buildRandomItems(): Item[] {
+function fallbackTitles(categoryName: string): string[] {
+  return [
+    `${categoryName} básico`,
+    `${categoryName} especial`,
+    `${categoryName} oferta`,
+    `${categoryName} extra`,
+  ];
+}
+
+async function buildCategoryTemplates(userId: number): Promise<CategoryTemplate[]> {
+  const categories = await CategoryModel.getAllByUser(userId);
+
+  if (categories.length) {
+    return categories.map((cat) => ({
+      id: cat.id!,
+      name: cat.name,
+      sampleTitles: CATEGORY_TITLES[cat.name] ?? fallbackTitles(cat.name),
+    }));
+  }
+
+  return DEFAULT_CATEGORIES.map((c) => ({
+    id: null,
+    name: c.name,
+    sampleTitles: CATEGORY_TITLES[c.name] ?? fallbackTitles(c.name),
+  }));
+}
+
+function buildRandomItems(categories: CategoryTemplate[]): Item[] {
+  const usableCategories = categories.length
+    ? categories
+    : [{ id: null, name: "Sin categoría", sampleTitles: fallbackTitles("Producto") }];
+
   const date = todayISO();
 
   // 50% de probabilidad de varios ítems misma categoría,
@@ -37,18 +76,30 @@ function buildRandomItems(): Item[] {
   const items: Item[] = [];
 
   if (clustered) {
-    const cat = pick(CATEGORY_LIST);
+    const cat = pick(usableCategories);
     for (let i = 0; i < count; i++) {
-      const title = pick(CATEGORY_TITLES[cat]);
+      const title = pick(cat.sampleTitles);
       const amount = rand(1200, 9800) + Math.round(Math.random() * 99) / 100;
-      items.push({ title, amount: Number(amount.toFixed(2)), category: cat, date });
+      items.push({
+        title,
+        amount: Number(amount.toFixed(2)),
+        categoryId: cat.id,
+        categoryName: cat.name,
+        date,
+      });
     }
   } else {
     for (let i = 0; i < count; i++) {
-      const cat = pick(CATEGORY_LIST);
-      const title = pick(CATEGORY_TITLES[cat]);
+      const cat = pick(usableCategories);
+      const title = pick(cat.sampleTitles);
       const amount = rand(1200, 9800) + Math.round(Math.random() * 99) / 100;
-      items.push({ title, amount: Number(amount.toFixed(2)), category: cat, date });
+      items.push({
+        title,
+        amount: Number(amount.toFixed(2)),
+        categoryId: cat.id,
+        categoryName: cat.name,
+        date,
+      });
     }
   }
 
@@ -58,7 +109,7 @@ function buildRandomItems(): Item[] {
 function aggregateByCategory(items: Item[]) {
   const map = new Map<string, { category: string; amount: number; itemsCount: number; items: Array<{ title: string; amount: number }> }>();
   for (const it of items) {
-    const key = it.category || "Sin categoría";
+    const key = it.categoryName || "Sin categoría";
     if (!map.has(key)) {
       map.set(key, { category: key, amount: 0, itemsCount: 0, items: [] });
     }
@@ -77,9 +128,11 @@ function aggregateByCategory(items: Item[]) {
 }
 
 export const MockOcrSimpleController = {
-  async parse(_req: Request, res: Response) {
+  async parse(req: Request, res: Response) {
     try {
-      const items = buildRandomItems();
+      const userId = req.userId!;
+      const categories = await buildCategoryTemplates(userId);
+      const items = buildRandomItems(categories);
       const byCategory = aggregateByCategory(items);
       const total = Number(items.reduce((acc, x) => acc + x.amount, 0).toFixed(2));
 

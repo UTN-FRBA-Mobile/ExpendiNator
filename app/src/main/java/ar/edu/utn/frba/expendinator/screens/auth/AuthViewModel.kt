@@ -94,7 +94,8 @@ class AuthViewModel : ViewModel() {
                 }
 
                 if (response.status.isSuccess()) {
-                    // Podrías loguear automáticamente tras registrar: opcional
+                    val body = response.body<LoginResponse>()
+                    ApiClient.authToken = body.token
                     _uiState.value = AuthUiState.Success
                 } else {
                     _uiState.value = AuthUiState.Error("Registration failed (${response.status.value})")
