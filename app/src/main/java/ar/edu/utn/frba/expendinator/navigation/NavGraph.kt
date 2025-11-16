@@ -56,17 +56,23 @@ import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 import ar.edu.utn.frba.expendinator.screens.expenses.OcrReviewScreen
 import ar.edu.utn.frba.expendinator.screens.expenses.OcrViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class) // <- evita el warning/error de API experimental
 @Composable
 fun AppNavHost() {
+
     val nav = rememberNavController()
+    LaunchedEffect(Unit) {
+        NavigationController.navController = nav
+    }
     val vm: ExpenseListViewModel = viewModel()
     val budgetVm: BudgetViewModel = viewModel()
     val authVm: AuthViewModel = viewModel()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
 
     val currentRoute by nav.currentBackStackEntryAsState()
         .let { state -> derivedStateOf { state.value?.destination?.route } }
@@ -174,6 +180,11 @@ fun AppNavHost() {
 
                 // Home
                 composable(Dest.Main.route) {
+                    // Conectar el trigger del FAB al NavigationController
+                    LaunchedEffect(fabAction) {
+                        NavigationController.triggerFab = fabAction
+                    }
+
                     ExpenseListScreen(
                         viewModel = vm,
                         onExpenseClicked = { expense -> nav.navigate("detail/${expense.id}") },
@@ -181,6 +192,7 @@ fun AppNavHost() {
                         onAddClicked = { nav.navigate(Dest.OcrReview.route) }
                     )
                 }
+
 
                 // Detalle
                 composable(
@@ -250,10 +262,18 @@ fun AppNavHost() {
                 composable(Dest.Metrics.route) { PlaceholderScreen("Metricas") }
 
                 composable(Dest.OcrReview.route) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+
                     OcrReviewScreen(
                         ocrVm,
                         onConfirmed = {
-                            // Volvemos al home y podrías refrescar gastos
+                            // Refrescar gastos y actualizar widget
+                            vm.refreshAll()
+                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                kotlinx.coroutines.delay(500) // Esperar a que se carguen los datos
+                                vm.saveWidgetData(context)
+                            }
+
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Main.route) { inclusive = true }
                             }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Expendinator</string>
+    <string name="widget_description">Acceso rápido a escaneo y resumen de gastos</string>
 </resources>
