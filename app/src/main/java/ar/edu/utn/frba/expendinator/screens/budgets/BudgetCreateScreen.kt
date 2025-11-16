@@ -208,6 +208,192 @@ fun BudgetCreateScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun BudgetEditScreen(
+    budgetVm: BudgetViewModel,
+    expensesVm: ExpenseListViewModel,
+    budgetId: String,
+    onSaved: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val categories by expensesVm.categoriesFlow.collectAsState()
+    val budgets by budgetVm.budgets.collectAsState()
+    val existing = budgets.firstOrNull { it.id == budgetId }
+
+    var selectedCategoryId by rememberSaveable { mutableStateOf(existing?.category?.id) }
+    var amountText by rememberSaveable { mutableStateOf(existing?.limitAmount?.toString() ?: "") }
+    var selectedPeriod by rememberSaveable { mutableStateOf(existing?.period?.name ?: BudgetPeriod.MONTHLY.name) }
+    var startDate by rememberSaveable { mutableStateOf(existing?.startDate ?: "") }
+    var endDate by rememberSaveable { mutableStateOf(existing?.endDate ?: "") }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(categories) {
+        if (existing != null && selectedCategoryId == null && categories.isNotEmpty()) {
+            selectedCategoryId = categories.firstOrNull { it.id == existing.category.id }?.id
+                ?: categories.first().id
+        }
+    }
+
+    LaunchedEffect(existing) {
+        existing?.let {
+            selectedCategoryId = it.category.id
+            amountText = it.limitAmount.toString()
+            selectedPeriod = it.period.name
+            startDate = it.startDate
+            endDate = it.endDate
+        }
+    }
+
+    LaunchedEffect(categories.isEmpty()) {
+        if (categories.isEmpty()) {
+            expensesVm.refreshAll()
+        }
+    }
+
+    LaunchedEffect(Unit) { if (existing == null) budgetVm.refresh() }
+
+    if (existing == null) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Cargando presupuesto...", style = MaterialTheme.typography.bodyLarge)
+            TextButton(onClick = onCancel) { Text("Volver") }
+        }
+        return
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Editar presupuesto",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        CategoryPicker(
+            categories = categories,
+            selectedCategoryId = selectedCategoryId,
+            enabled = categories.isNotEmpty(),
+            onCategorySelected = { selectedCategoryId = it }
+        )
+
+        OutlinedTextField(
+            value = amountText,
+            onValueChange = {
+                amountText = it
+                    .filter { ch -> ch.isDigit() || ch == '.' || ch == ',' }
+                    .replace(',', '.')
+            },
+            label = { Text("Monto límite ($)") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text("Periodo", style = MaterialTheme.typography.labelLarge)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BudgetPeriod.values().forEach { period ->
+                val label = when (period) {
+                    BudgetPeriod.MONTHLY -> "Mensual"
+                    BudgetPeriod.WEEKLY -> "Semanal"
+                    BudgetPeriod.YEARLY -> "Anual"
+                }
+                FilterChip(
+                    selected = selectedPeriod == period.name,
+                    onClick = { selectedPeriod = period.name },
+                    label = { Text(label) }
+                )
+            }
+        }
+
+        OutlinedTextField(
+            value = startDate,
+            onValueChange = { startDate = it },
+            label = { Text("Fecha inicio (YYYY-MM-DD)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = endDate,
+            onValueChange = { endDate = it },
+            label = { Text("Fecha fin (YYYY-MM-DD)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                val categoryId = selectedCategoryId?.toIntOrNull()
+                val amount = amountText.toDoubleOrNull()
+                val period = BudgetPeriod.valueOf(selectedPeriod)
+
+                if (categoryId == null) {
+                    showErrorToast(context, "Elegí una categoría")
+                    return@Button
+                }
+
+                if (amount == null || amount <= 0) {
+                    showErrorToast(context, "Ingresá un monto válido")
+                    return@Button
+                }
+
+                if (!isValidDate(startDate) || !isValidDate(endDate)) {
+                    showErrorToast(context, "Las fechas deben tener formato YYYY-MM-DD")
+                    return@Button
+                }
+
+                if (startDate > endDate) {
+                    showErrorToast(context, "La fecha inicio debe ser anterior a la fin")
+                    return@Button
+                }
+
+                scope.launch {
+                    val ok = budgetVm.updateBudget(
+                        budgetId = budgetId.toInt(),
+                        categoryId = categoryId,
+                        limitAmount = amount,
+                        period = period,
+                        startDate = startDate,
+                        endDate = endDate
+                    )
+                    if (ok) {
+                        showSuccessToast(context, "Presupuesto actualizado")
+                        onSaved()
+                    } else {
+                        showErrorToast(context, "No se pudo actualizar el presupuesto")
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = categories.isNotEmpty()
+        ) {
+            Text("Guardar cambios")
+        }
+
+        TextButton(
+            onClick = onCancel,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Cancelar")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun CategoryPicker(
     categories: List<Category>,
     selectedCategoryId: String?,
