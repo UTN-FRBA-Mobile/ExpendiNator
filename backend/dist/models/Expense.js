@@ -12,6 +12,9 @@ export const ExpenseModel = {
             title: r.title,
             amount: r.amount,
             date: r.date,
+            category_id: r.category_id || null,
+            category_name: r.category_name || null,
+            category_color: r.category_color || null,
             category: r.category_id
                 ? { id: r.category_id, name: r.category_name, color: r.category_color }
                 : null,

@@ -77,10 +77,17 @@ class ExpenseListViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val categoryId = expense.category?.id?.toIntOrNull()
+
+                val dateOnly = expense.date.take(10)
+
+                android.util.Log.d("ExpenseUpdate", "Actualizando gasto ${expense.id}")
+                android.util.Log.d("ExpenseUpdate", "Category ID enviado: $categoryId")
+                android.util.Log.d("ExpenseUpdate", "Category seleccionada: ${expense.category?.name}")
+
                 val req = UpdateExpenseRequest(
                     title = expense.title,
                     amount = expense.amount,
-                    date = expense.date,
+                    date = dateOnly,
                     category_id = categoryId
                 )
 
@@ -90,12 +97,15 @@ class ExpenseListViewModel : ViewModel() {
                 }
 
                 if (resp.status.value in 200..299) {
+                    android.util.Log.d("ExpenseUpdate", "Gasto actualizado exitosamente")
                     _uiState.value = _uiState.value.map {
                         if (it.id == expense.id) expense else it
                     }
+                } else {
+                    android.util.Log.e("ExpenseUpdate", "Error: ${resp.status.value}")
                 }
             } catch (e: Exception) {
-                // Podrías exponer un estado de error si lo necesitás
+                android.util.Log.e("ExpenseUpdate", "Excepción al actualizar", e)
             }
         }
     }
@@ -151,6 +161,14 @@ class ExpenseListViewModel : ViewModel() {
         val catIdStr = category_id?.toString()
         val existing = categories.firstOrNull { it.id == catIdStr }
 
+        // ⬇️ AGREGAR LOGS
+        android.util.Log.d("ExpenseMapping", "=== Mapeando gasto: $title ===")
+        android.util.Log.d("ExpenseMapping", "category_id recibido: $category_id")
+        android.util.Log.d("ExpenseMapping", "catIdStr: $catIdStr")
+        android.util.Log.d("ExpenseMapping", "Categoría encontrada: ${existing?.name}")
+        android.util.Log.d("ExpenseMapping", "Total categorías disponibles: ${categories.size}")
+        // ⬆️
+
         val cat = when {
             existing != null -> existing
             category_id != null && category_name != null && category_color != null ->
@@ -171,6 +189,7 @@ class ExpenseListViewModel : ViewModel() {
             date = date
         )
     }
+
     /**
      * Calcula el total gastado hoy
      */

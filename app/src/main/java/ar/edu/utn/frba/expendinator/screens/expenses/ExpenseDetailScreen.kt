@@ -40,6 +40,7 @@ fun ExpenseDetailScreen(
 ) {
     val list by viewModel.uiState.collectAsState()
     val expense = remember(id, list) { viewModel.getById(id) }
+    val categories = viewModel.categories
 
     if (expense == null) {
         LaunchedEffect(Unit) { onBack() }
@@ -170,7 +171,7 @@ fun ExpenseDetailScreen(
                 )
 
                 // Resto de categorías
-                viewModel.categories.forEach { cat ->
+                categories.forEach { cat ->
                     DropdownMenuItem(
                         leadingIcon = {
                             Box(

@@ -57,6 +57,7 @@ import ar.edu.utn.frba.expendinator.screens.expenses.OcrReviewScreen
 import ar.edu.utn.frba.expendinator.screens.expenses.OcrViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
+import ar.edu.utn.frba.expendinator.screens.metrics.MetricsScreen
 
 @OptIn(ExperimentalMaterial3Api::class) // <- evita el warning/error de API experimental
 @Composable
@@ -201,6 +202,10 @@ fun AppNavHost() {
                 ) { backStackEntry ->
                     val id = backStackEntry.arguments?.getString("id") ?: return@composable
 
+                    LaunchedEffect(Unit) {
+                        vm.refreshAll() // Refrescar categorías al abrir el detalle
+                    }
+
                     var onSave by remember { mutableStateOf<() -> Unit>({}) }
                     var onCancel by remember { mutableStateOf<() -> Unit>({}) }
                     var onStartEdit by remember { mutableStateOf<() -> Unit>({}) }
@@ -245,7 +250,10 @@ fun AppNavHost() {
                 composable(Dest.Categories.route) {
                     CategoryCreateScreen(
                         viewModel = vm,
-                        onSaved = { nav.popBackStack() }
+                        onSaved = {
+                            vm.refreshAll()  // ← Refrescar gastos y categorías
+                            nav.popBackStack()
+                        }
                     )
                 }
 
@@ -259,7 +267,12 @@ fun AppNavHost() {
                 }
 
                 composable("budget/new") { PlaceholderScreen("Nuevo presupuesto") }
-                composable(Dest.Metrics.route) { PlaceholderScreen("Metricas") }
+
+
+
+                composable(Dest.Metrics.route) {
+                    MetricsScreen(expenseVm = vm)
+                }
 
                 composable(Dest.OcrReview.route) {
                     val context = androidx.compose.ui.platform.LocalContext.current
