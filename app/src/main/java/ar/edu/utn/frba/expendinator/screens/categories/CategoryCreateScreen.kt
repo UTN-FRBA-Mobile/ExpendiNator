@@ -43,8 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 import ar.edu.utn.frba.expendinator.utils.showErrorToast
 import ar.edu.utn.frba.expendinator.utils.showSuccessToast
@@ -63,6 +65,10 @@ fun CategoryCreateScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    val nombreRequeridoText = stringResource(R.string.nombre_requerido)
+    val categoriaCreadaCorrectamenteText = stringResource(R.string.categoria_creada_correctamente)
+    val noSePudoGuardarCategoriaText = stringResource(R.string.no_se_pudo_guardar_categoria)
+
     fun removeKeyword(index: Int) {
         if (keywords.size > 1) {
             keywords.removeAt(index)
@@ -78,12 +84,12 @@ fun CategoryCreateScreen(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nombre") },
+            label = { Text(stringResource(R.string.nombre)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text("Color", style = MaterialTheme.typography.labelLarge)
+        Text(stringResource(R.string.color), style = MaterialTheme.typography.labelLarge)
         val colorOptions = longListOf(
             0xFF9EC5FEL, 0xFFFECBA1L, 0xFFA3CFBBL,
             0xFFF1AEB5L, 0xFFE2C6FEL, 0xFFFFD966L
@@ -111,13 +117,13 @@ fun CategoryCreateScreen(
             }
         }
 
-        Text("Palabras clave", style = MaterialTheme.typography.labelLarge)
+        Text(stringResource(R.string.palabras_clave), style = MaterialTheme.typography.labelLarge)
 
         keywords.forEachIndexed { index, value ->
             OutlinedTextField(
                 value = value,
                 onValueChange = { new -> keywords[index] = new },
-                placeholder = { Text("Ej: super, cine...") },
+                placeholder = { Text(stringResource(R.string.ejemplo_palabras_clave)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
@@ -128,7 +134,7 @@ fun CategoryCreateScreen(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Eliminar palabra clave"
+                            contentDescription = stringResource(R.string.eliminar_palabra_clave)
                         )
                     }
                 },
@@ -144,7 +150,7 @@ fun CategoryCreateScreen(
         TextButton(onClick = { keywords.add("") }) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(Modifier.width(6.dp))
-            Text("Agregar palabra clave")
+            Text(stringResource(R.string.agregar_palabra_clave))
         }
 
         Spacer(Modifier.height(12.dp))
@@ -152,7 +158,7 @@ fun CategoryCreateScreen(
         Button(
             onClick = {
                 if (name.isBlank()) {
-                    showErrorToast(context, "El nombre es requerido.")
+                    showErrorToast(context, nombreRequeridoText)
                     return@Button
                 }
 
@@ -169,7 +175,7 @@ fun CategoryCreateScreen(
                     if (ok) {
                         showSuccessToast(
                             context,
-                            "Categoría guardada correctamente."
+                            categoriaCreadaCorrectamenteText
                         )
 
                         name = ""
@@ -181,14 +187,14 @@ fun CategoryCreateScreen(
                     } else {
                         showErrorToast(
                             context,
-                            "No se pudo guardar la categoría."
+                            noSePudoGuardarCategoriaText
                         )
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Guardar")
+            Text(stringResource(R.string.guardar))
         }
     }
 }

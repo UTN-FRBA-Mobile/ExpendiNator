@@ -35,7 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,7 +138,7 @@ fun BudgetScreen(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Nuevo", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.nuevo), style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

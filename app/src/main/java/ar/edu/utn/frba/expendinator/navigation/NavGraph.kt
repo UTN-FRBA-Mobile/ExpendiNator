@@ -36,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -44,6 +45,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.data.remote.ApiClient
 import ar.edu.utn.frba.expendinator.screens.auth.AuthViewModel
 import ar.edu.utn.frba.expendinator.screens.auth.LoginScreen
@@ -99,7 +101,7 @@ fun AppNavHost() {
         drawerContent = {
             ModalDrawerSheet {
                 Text(
-                    "Expendinator",
+                    stringResource(R.string.app_name),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp)
                 )
@@ -122,7 +124,7 @@ fun AppNavHost() {
                     )
                 }
                 NavigationDrawerItem(
-                    label = { Text("Cerrar sesión") },
+                    label = { Text(stringResource(R.string.cerrar_sesion)) },
                     selected = false,
                     icon = { Icon(Icons.Filled.Close, contentDescription = "Cerrar sesión") },
                     onClick = {

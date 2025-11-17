@@ -19,8 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.models.Category
 
 
@@ -98,7 +100,7 @@ fun ExpenseDetailScreen(
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
-            label = { Text("Nombre") },
+            label = { Text(stringResource(R.string.nombre)) },
             singleLine = true,
             readOnly = readOnly,
             enabled = true,
@@ -112,7 +114,7 @@ fun ExpenseDetailScreen(
                     .filter { ch -> ch.isDigit() || ch == '.' || ch == ',' }
                     .replace(',', '.')
             },
-            label = { Text("$ Monto") },
+            label = { Text(stringResource(R.string.monto)) },
             singleLine = true,
             readOnly = readOnly,
             enabled = true,
@@ -127,10 +129,10 @@ fun ExpenseDetailScreen(
             onExpandedChange = { if (isEditing) expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = selectedCategory?.name ?: "Sin categoría",
+                value = selectedCategory?.name ?: stringResource(R.string.sin_categoria),
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Categoría") },
+                label = { Text(stringResource(R.string.categoria)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 leadingIcon = {
                     // puntito de color
@@ -162,7 +164,7 @@ fun ExpenseDetailScreen(
                                 .background(Color.LightGray, CircleShape)
                         )
                     },
-                    text = { Text("Sin categoría") },
+                    text = { Text(stringResource(R.string.sin_categoria)) },
                     onClick = {
                         selectedCategory = null
                         expanded = false
@@ -195,7 +197,7 @@ fun ExpenseDetailScreen(
             Button(
                 onClick = { save() },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Guardar cambios") }
+            ) { Text(stringResource(R.string.guardar_cambios)) }
         }
     }
 
@@ -203,20 +205,20 @@ fun ExpenseDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar gasto") },
-            text = { Text("¿Seguro que querés borrar este gasto?") },
+            title = { Text(stringResource(R.string.eliminar_gasto)) },
+            text = { Text(stringResource(R.string.seguro_quiere_eliminar_gasto)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.delete(expense.id)
                         showDeleteDialog = false
                     }
-                ) { Text("Borrar") }
+                ) { Text(stringResource(R.string.borrar)) }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showDeleteDialog = false }
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(R.string.cancelar)) }
             }
         )
     }

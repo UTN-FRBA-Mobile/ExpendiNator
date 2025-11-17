@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import ar.edu.utn.frba.expendinator.models.Category
 import ar.edu.utn.frba.expendinator.models.Expense
 import java.text.SimpleDateFormat
 import java.util.Locale
+import ar.edu.utn.frba.ExpendinatorApp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,7 +104,7 @@ fun ExpenseListScreen(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Sin gastos todavía")
+                Text(stringResource(R.string.sin_gastos_todavia))
             }
         } else {
             LazyColumn(
@@ -130,10 +132,10 @@ fun ExpenseListScreen(
             ) {
                 Image(
                     bitmap = it.asImageBitmap(),
-                    contentDescription = "Foto capturada",
+                    contentDescription = stringResource(R.string.foto_capturada),
                     modifier = Modifier.size(96.dp)
                 )
-                Text("Última captura lista para OCR")
+                Text(stringResource(R.string.captura_lista_ocr))
             }
         }
     }

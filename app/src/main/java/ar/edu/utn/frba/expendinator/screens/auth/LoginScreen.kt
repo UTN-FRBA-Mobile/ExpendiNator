@@ -12,9 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 
 @Composable
 fun LoginScreen(
@@ -41,8 +43,8 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Expendinator", style = MaterialTheme.typography.headlineMedium)
-        Text("Ingresá a tu cuenta", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.ingresa_cuenta), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
 
         Card(
             modifier = Modifier
@@ -54,7 +56,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     leadingIcon = { Icon(imageVector = Icons.Outlined.Email, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -63,7 +65,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     leadingIcon = { Icon(imageVector = Icons.Outlined.Lock, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = { showPassword = !showPassword }) {
@@ -98,7 +100,7 @@ fun LoginScreen(
                     if (isLoading) {
                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                     } else {
-                        Text("Login")
+                        Text(stringResource(R.string.login))
                     }
                 }
 
@@ -108,7 +110,7 @@ fun LoginScreen(
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 4.dp)
                 ) {
-                    Text("¿No tenés cuenta? Registrate")
+                    Text(stringResource(R.string.no_tenes_cuenta))
                 }
             }
         }

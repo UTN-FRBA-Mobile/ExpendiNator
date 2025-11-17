@@ -15,8 +15,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +59,7 @@ fun MetricsScreen(
         if (categoryData.isNotEmpty()) {
             PieChartCard(categoryData)
         } else {
-            EmptyStateCard("No hay datos para mostrar en este período")
+            EmptyStateCard(stringResource(R.string.no_hay_datos_para_este_periodo))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -66,7 +68,7 @@ fun MetricsScreen(
         if (dailyData.isNotEmpty()) {
             BarChartCard(dailyData)
         } else {
-            EmptyStateCard("No hay datos diarios")
+            EmptyStateCard(stringResource(R.string.no_hay_datos_diarios))
         }
     }
 }
@@ -88,7 +90,7 @@ fun FiltersCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Filtros",
+                stringResource(R.string.filtros),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
@@ -97,7 +99,7 @@ fun FiltersCard(
             OutlinedTextField(
                 value = startDate.toString(),
                 onValueChange = {},
-                label = { Text("Fecha Inicio") },
+                label = { Text(stringResource(R.string.fecha_inicio)) },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showStartDatePicker = true }) {
@@ -113,7 +115,7 @@ fun FiltersCard(
             OutlinedTextField(
                 value = endDate.toString(),
                 onValueChange = {},
-                label = { Text("Fecha Fin") },
+                label = { Text(stringResource(R.string.fecha_fin)) },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showEndDatePicker = true }) {
@@ -172,12 +174,12 @@ fun DatePickerModalDialog(
                     onDateSelected(localDate)
                 }
             }) {
-                Text("Aceptar")
+                Text(stringResource(R.string.aceptar))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.cancelar))
             }
         }
     ) {
@@ -193,7 +195,7 @@ fun PieChartCard(data: List<CategoryData>) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Gastos por Categoría",
+                stringResource(R.string.gastos_por_categoria),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -282,7 +284,7 @@ fun BarChartCard(data: List<DailyData>) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Gastos Diarios",
+                stringResource(R.string.gastos_diarios),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )

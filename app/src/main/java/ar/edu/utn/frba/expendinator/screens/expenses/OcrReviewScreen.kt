@@ -42,10 +42,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.model.dto.OcrItem
 import ar.edu.utn.frba.expendinator.models.Category
 import kotlinx.coroutines.launch
@@ -66,6 +68,9 @@ fun OcrReviewScreen(
     var creatingCategory by remember { mutableStateOf(false) }
     var pendingCategoryIndex by remember { mutableStateOf<Int?>(null) }
 
+    val nombreRequeridoText = stringResource(R.string.nombre_requerido)
+    val noSePudoCrearCategoriaText = stringResource(R.string.no_se_pudo_crear_categoria)
+
     LaunchedEffect(Unit) { ocrVm.loadMock() }
     LaunchedEffect(categories.isEmpty()) {
         if (categories.isEmpty()) {
@@ -82,7 +87,7 @@ fun OcrReviewScreen(
         is OcrUiState.Error -> {
             val msg = (state as OcrUiState.Error).message
             Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                Text("Error: $msg")
+                Text(text = "${stringResource(R.string.error)} $msg")
             }
         }
         is OcrUiState.Preview -> {
@@ -99,11 +104,11 @@ fun OcrReviewScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            "Ticket: ${preview.data.receiptId}",
+                            stringResource(R.string.ticket_id, preview.data.receiptId),
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            "Fecha: ${preview.data.date}  •  Total: ${preview.data.total}",
+                            stringResource(R.string.fecha_y_total_con_datos, preview.data.date, preview.data.total),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -130,7 +135,7 @@ fun OcrReviewScreen(
                             .fillMaxWidth()
                             .height(48.dp)
                     ) {
-                        Text("Confirmar y guardar", textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.confirmar_y_guardar), textAlign = TextAlign.Center)
                     }
                 }
             }
@@ -158,7 +163,7 @@ fun OcrReviewScreen(
             onConfirm = { name, keywords ->
                 val idx = pendingCategoryIndex ?: return@AddCategoryDialog
                 if (name.isBlank()) {
-                    categoryDialogError = "El nombre es requerido"
+                    categoryDialogError = nombreRequeridoText
                     return@AddCategoryDialog
                 }
                 scope.launch {
@@ -181,7 +186,7 @@ fun OcrReviewScreen(
                         categoryDialogError = null
                         pendingCategoryIndex = null
                     } else {
-                        categoryDialogError = "No se pudo crear la categoría"
+                        categoryDialogError = noSePudoCrearCategoriaText
                     }
                 }
             }
@@ -202,7 +207,7 @@ private fun OcrItemEditor(
             OutlinedTextField(
                 value = item.title,
                 onValueChange = { onChange(item.copy(title = it)) },
-                label = { Text("Título") },
+                label = { Text(stringResource(R.string.titulo)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -213,19 +218,19 @@ private fun OcrItemEditor(
                     val v = cleaned.toDoubleOrNull()
                     onChange(item.copy(amount = v ?: item.amount))
                 },
-                label = { Text("Monto") },
+                label = { Text(stringResource(R.string.monto_solo)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
             var expanded by remember { mutableStateOf(false) }
-            val categoryLabel = item.categoryName ?: "Sin categoría"
+            val categoryLabel = item.categoryName ?: stringResource(R.string.sin_categoria)
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                 OutlinedTextField(
                     value = categoryLabel,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Categoría") },
+                    label = { Text(stringResource(R.string.categoria)) },
                     leadingIcon = {
                         val color = item.categoryId?.let { id ->
                             categories.firstOrNull { it.id == id.toString() }?.color
@@ -243,7 +248,7 @@ private fun OcrItemEditor(
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Sin categoría") },
+                        text = { Text(stringResource(R.string.sin_categoria)) },
                         onClick = {
                             expanded = false
                             onChange(item.copy(categoryId = null, categoryName = null))
@@ -261,7 +266,7 @@ private fun OcrItemEditor(
                     }
                     DropdownMenuItem(
                         leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
-                        text = { Text("Agregar categoría") },
+                        text = { Text(stringResource(R.string.agregar_categoria)) },
                         onClick = {
                             expanded = false
                             onAddCategoryRequested()
@@ -272,7 +277,7 @@ private fun OcrItemEditor(
             OutlinedTextField(
                 value = item.date,
                 onValueChange = { onChange(item.copy(date = it)) },
-                label = { Text("Fecha (YYYY-MM-DD)") },
+                label = { Text(stringResource(R.string.fecha_formato)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -302,20 +307,20 @@ private fun AddCategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nueva categoría") },
+        title = { Text(stringResource(R.string.nueva_categoria)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.nombre)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = keywordsText,
                     onValueChange = { keywordsText = it },
-                    label = { Text("Keywords (separadas por coma)") },
+                    label = { Text(stringResource(R.string.keywords_separadas_por_coma)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -338,13 +343,13 @@ private fun AddCategoryDialog(
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Crear")
+                    Text(stringResource(R.string.crear))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isLoading) {
-                Text("Cancelar")
+                Text(stringResource(R.string.cancelar))
             }
         }
     )

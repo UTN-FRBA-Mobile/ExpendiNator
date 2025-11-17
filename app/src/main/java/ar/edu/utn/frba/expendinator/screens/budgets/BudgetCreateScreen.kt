@@ -37,8 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 import ar.edu.utn.frba.expendinator.models.BudgetPeriod
 import ar.edu.utn.frba.expendinator.models.Category
 import ar.edu.utn.frba.expendinator.screens.expenses.ExpenseListViewModel
@@ -69,6 +71,13 @@ fun BudgetCreateScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    val elegiUnaCategoriaText = stringResource(R.string.elegi_una_categoria)
+    val ingresaMontoValidoText = stringResource(R.string.ingresa_monto_valido)
+    val formatoFechasText = stringResource(R.string.formato_fechas)
+    val fechaInicioValidacionText = stringResource(R.string.fecha_inicio_validacion)
+    val presupuestoCreadoText = stringResource(R.string.presupuesto_creado)
+    val noSePudoCrearPresupuestoText = stringResource(R.string.no_se_pudo_crear_presupuesto)
+
     LaunchedEffect(categories) {
         if (categories.isNotEmpty() && selectedCategoryId == null) {
             selectedCategoryId = categories.first().id
@@ -88,7 +97,7 @@ fun BudgetCreateScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Nuevo presupuesto",
+            text = stringResource(R.string.nuevo_presupuesto),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -106,22 +115,22 @@ fun BudgetCreateScreen(
                     .filter { ch -> ch.isDigit() || ch == '.' || ch == ',' }
                     .replace(',', '.')
             },
-            label = { Text("Monto límite ($)") },
+            label = { Text(stringResource(R.string.monto_limite)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text("Periodo", style = MaterialTheme.typography.labelLarge)
+        Text(stringResource(R.string.periodo), style = MaterialTheme.typography.labelLarge)
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BudgetPeriod.values().forEach { period ->
                 val label = when (period) {
-                    BudgetPeriod.MONTHLY -> "Mensual"
-                    BudgetPeriod.WEEKLY -> "Semanal"
-                    BudgetPeriod.YEARLY -> "Anual"
+                    BudgetPeriod.MONTHLY -> stringResource(R.string.mensual)
+                    BudgetPeriod.WEEKLY -> stringResource(R.string.semanal)
+                    BudgetPeriod.YEARLY -> stringResource(R.string.anual)
                 }
                 FilterChip(
                     selected = selectedPeriod == period.name,
@@ -134,7 +143,7 @@ fun BudgetCreateScreen(
         OutlinedTextField(
             value = startDate,
             onValueChange = { startDate = it },
-            label = { Text("Fecha inicio (YYYY-MM-DD)") },
+            label = { Text(stringResource(R.string.fecha_inicio_formato)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -142,7 +151,7 @@ fun BudgetCreateScreen(
         OutlinedTextField(
             value = endDate,
             onValueChange = { endDate = it },
-            label = { Text("Fecha fin (YYYY-MM-DD)") },
+            label = { Text(stringResource(R.string.fecha_fin_formato)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -156,22 +165,22 @@ fun BudgetCreateScreen(
                 val period = BudgetPeriod.valueOf(selectedPeriod)
 
                 if (categoryId == null) {
-                    showErrorToast(context, "Elegí una categoría")
+                    showErrorToast(context, elegiUnaCategoriaText)
                     return@Button
                 }
 
                 if (amount == null || amount <= 0) {
-                    showErrorToast(context, "Ingresá un monto válido")
+                    showErrorToast(context, ingresaMontoValidoText)
                     return@Button
                 }
 
                 if (!isValidDate(startDate) || !isValidDate(endDate)) {
-                    showErrorToast(context, "Las fechas deben tener formato YYYY-MM-DD")
+                    showErrorToast(context, formatoFechasText)
                     return@Button
                 }
 
                 if (startDate > endDate) {
-                    showErrorToast(context, "La fecha inicio debe ser anterior a la fin")
+                    showErrorToast(context, fechaInicioValidacionText)
                     return@Button
                 }
 
@@ -184,24 +193,24 @@ fun BudgetCreateScreen(
                         endDate = endDate
                     )
                     if (ok) {
-                        showSuccessToast(context, "Presupuesto creado")
+                        showSuccessToast(context, presupuestoCreadoText)
                         onSaved()
                     } else {
-                        showErrorToast(context, "No se pudo crear el presupuesto")
+                        showErrorToast(context, noSePudoCrearPresupuestoText)
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = categories.isNotEmpty()
         ) {
-            Text("Guardar")
+            Text(stringResource(R.string.guardar))
         }
 
         TextButton(
             onClick = onCancel,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cancelar")
+            Text(stringResource(R.string.cancelar))
         }
     }
 }
@@ -227,6 +236,14 @@ fun BudgetEditScreen(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    val elegiUnaCategoriaText = stringResource(R.string.elegi_una_categoria)
+    val ingresaMontoValidoText = stringResource(R.string.ingresa_monto_valido)
+    val formatoFechasText = stringResource(R.string.formato_fechas)
+    val fechaInicioValidacionText = stringResource(R.string.fecha_inicio_validacion)
+    val presupuestoActualizadoText = stringResource(R.string.presupuesto_actualizado)
+    val noSePudoActualizarPresupuestoText = stringResource(R.string.no_se_pudo_actualizar_presupuesto)
+
 
     LaunchedEffect(categories) {
         if (existing != null && selectedCategoryId == null && categories.isNotEmpty()) {
@@ -260,8 +277,8 @@ fun BudgetEditScreen(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Cargando presupuesto...", style = MaterialTheme.typography.bodyLarge)
-            TextButton(onClick = onCancel) { Text("Volver") }
+            Text(stringResource(R.string.cargando_presupuesto), style = MaterialTheme.typography.bodyLarge)
+            TextButton(onClick = onCancel) { Text(stringResource(R.string.volver)) }
         }
         return
     }
@@ -273,7 +290,7 @@ fun BudgetEditScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Editar presupuesto",
+            text = stringResource(R.string.editar_presupuesto),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -291,22 +308,22 @@ fun BudgetEditScreen(
                     .filter { ch -> ch.isDigit() || ch == '.' || ch == ',' }
                     .replace(',', '.')
             },
-            label = { Text("Monto límite ($)") },
+            label = { Text(stringResource(R.string.monto_limite_simbolo)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text("Periodo", style = MaterialTheme.typography.labelLarge)
+        Text(stringResource(R.string.periodo), style = MaterialTheme.typography.labelLarge)
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BudgetPeriod.values().forEach { period ->
                 val label = when (period) {
-                    BudgetPeriod.MONTHLY -> "Mensual"
-                    BudgetPeriod.WEEKLY -> "Semanal"
-                    BudgetPeriod.YEARLY -> "Anual"
+                    BudgetPeriod.MONTHLY -> stringResource(R.string.mensual)
+                    BudgetPeriod.WEEKLY -> stringResource(R.string.semanal)
+                    BudgetPeriod.YEARLY -> stringResource(R.string.anual)
                 }
                 FilterChip(
                     selected = selectedPeriod == period.name,
@@ -319,7 +336,7 @@ fun BudgetEditScreen(
         OutlinedTextField(
             value = startDate,
             onValueChange = { startDate = it },
-            label = { Text("Fecha inicio (YYYY-MM-DD)") },
+            label = { Text(stringResource(R.string.fecha_inicio_formato)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -327,7 +344,7 @@ fun BudgetEditScreen(
         OutlinedTextField(
             value = endDate,
             onValueChange = { endDate = it },
-            label = { Text("Fecha fin (YYYY-MM-DD)") },
+            label = { Text(stringResource(R.string.fecha_fin_formato)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -341,22 +358,22 @@ fun BudgetEditScreen(
                 val period = BudgetPeriod.valueOf(selectedPeriod)
 
                 if (categoryId == null) {
-                    showErrorToast(context, "Elegí una categoría")
+                    showErrorToast(context, elegiUnaCategoriaText)
                     return@Button
                 }
 
                 if (amount == null || amount <= 0) {
-                    showErrorToast(context, "Ingresá un monto válido")
+                    showErrorToast(context, ingresaMontoValidoText)
                     return@Button
                 }
 
                 if (!isValidDate(startDate) || !isValidDate(endDate)) {
-                    showErrorToast(context, "Las fechas deben tener formato YYYY-MM-DD")
+                    showErrorToast(context, formatoFechasText)
                     return@Button
                 }
 
                 if (startDate > endDate) {
-                    showErrorToast(context, "La fecha inicio debe ser anterior a la fin")
+                    showErrorToast(context, fechaInicioValidacionText)
                     return@Button
                 }
 
@@ -370,24 +387,24 @@ fun BudgetEditScreen(
                         endDate = endDate
                     )
                     if (ok) {
-                        showSuccessToast(context, "Presupuesto actualizado")
+                        showSuccessToast(context, presupuestoActualizadoText)
                         onSaved()
                     } else {
-                        showErrorToast(context, "No se pudo actualizar el presupuesto")
+                        showErrorToast(context, noSePudoActualizarPresupuestoText)
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = categories.isNotEmpty()
         ) {
-            Text("Guardar cambios")
+            Text(stringResource(R.string.guardar_cambios))
         }
 
         TextButton(
             onClick = onCancel,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cancelar")
+            Text(stringResource(R.string.cancelar))
         }
     }
 }
@@ -408,10 +425,10 @@ private fun CategoryPicker(
         onExpandedChange = { if (enabled) expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = selected?.name ?: if (enabled) "" else "Sin categorías disponibles",
+            value = selected?.name ?: if (enabled) "" else stringResource(R.string.sin_categorias_disponibles),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Categoría") },
+            label = { Text(stringResource(R.string.categoria)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             leadingIcon = {
                 val color = selected?.let { Color(it.color) } ?: Color.LightGray

@@ -11,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import ar.edu.utn.frba.ExpendinatorApp.R
 
 @Composable
 fun RegisterScreen(
@@ -42,7 +44,7 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.crear_cuenta), style = MaterialTheme.typography.headlineMedium)
 
         Card(
             modifier = Modifier
@@ -54,7 +56,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -62,7 +64,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password (min 6)") },
+                    label = { Text(stringResource(R.string.password_min_6)) },
                     leadingIcon = { Icon(imageVector = Icons.Outlined.Lock, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = { showPassword = !showPassword }) {
@@ -80,11 +82,11 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = confirm,
                     onValueChange = { confirm = it },
-                    label = { Text("Confirmar password") },
+                    label = { Text(stringResource(R.string.confirmar_password)) },
                     leadingIcon = { Icon(imageVector = Icons.Outlined.Lock, contentDescription = null) },
                     isError = confirm.isNotEmpty() && !match,
                     supportingText = {
-                        if (confirm.isNotEmpty() && !match) Text("Las contraseñas no coinciden")
+                        if (confirm.isNotEmpty() && !match) Text(stringResource(R.string.password_no_coinciden))
                     },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     singleLine = true,
@@ -111,7 +113,7 @@ fun RegisterScreen(
                     if (isLoading) {
                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                     } else {
-                        Text("Registrarme")
+                        Text(stringResource(R.string.registrarme))
                     }
                 }
 
@@ -121,7 +123,7 @@ fun RegisterScreen(
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 4.dp)
                 ) {
-                    Text("¿Ya tenés cuenta? Iniciar sesión")
+                    Text(stringResource(R.string.ya_tenes_cuenta))
                 }
             }
         }
