@@ -44,9 +44,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import ar.edu.utn.frba.expendinator.data.remote.ApiClient
 import ar.edu.utn.frba.expendinator.screens.auth.AuthViewModel
 import ar.edu.utn.frba.expendinator.screens.auth.LoginScreen
 import ar.edu.utn.frba.expendinator.screens.auth.RegisterScreen
+import ar.edu.utn.frba.expendinator.screens.budgets.BudgetCreateScreen
+import ar.edu.utn.frba.expendinator.screens.budgets.BudgetEditScreen
 import ar.edu.utn.frba.expendinator.screens.budgets.BudgetScreen
 import ar.edu.utn.frba.expendinator.screens.budgets.BudgetViewModel
 import ar.edu.utn.frba.expendinator.screens.categories.CategoryCreateScreen
@@ -59,7 +62,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import ar.edu.utn.frba.expendinator.screens.metrics.MetricsScreen
 
-@OptIn(ExperimentalMaterial3Api::class) // <- evita el warning/error de API experimental
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost() {
 
@@ -118,6 +121,22 @@ fun AppNavHost() {
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión") },
+                    selected = false,
+                    icon = { Icon(Icons.Filled.Close, contentDescription = "Cerrar sesión") },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+
+                        ApiClient.logout()
+
+                        nav.navigate(Dest.Login.route) {
+                            popUpTo(nav.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
             }
         }
     ) {
@@ -159,6 +178,8 @@ fun AppNavHost() {
                     LoginScreen(
                         viewModel = authVm,
                         onSuccess = {
+                            vm.refreshAll()
+                            budgetVm.refresh()
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Login.route) { inclusive = true }
                             }
@@ -171,6 +192,8 @@ fun AppNavHost() {
                     RegisterScreen(
                         viewModel = authVm,
                         onSuccess = {
+                            vm.refreshAll()
+                            budgetVm.refresh()
                             nav.navigate(Dest.Main.route) {
                                 popUpTo(Dest.Register.route) { inclusive = true }
                             }
@@ -181,7 +204,6 @@ fun AppNavHost() {
 
                 // Home
                 composable(Dest.Main.route) {
-                    // Conectar el trigger del FAB al NavigationController
                     LaunchedEffect(fabAction) {
                         NavigationController.triggerFab = fabAction
                     }
@@ -203,7 +225,7 @@ fun AppNavHost() {
                     val id = backStackEntry.arguments?.getString("id") ?: return@composable
 
                     LaunchedEffect(Unit) {
-                        vm.refreshAll() // Refrescar categorías al abrir el detalle
+                        vm.refreshAll()
                     }
 
                     var onSave by remember { mutableStateOf<() -> Unit>({}) }
@@ -251,7 +273,7 @@ fun AppNavHost() {
                     CategoryCreateScreen(
                         viewModel = vm,
                         onSaved = {
-                            vm.refreshAll()  // ← Refrescar gastos y categorías
+                            vm.refreshAll()
                             nav.popBackStack()
                         }
                     )
@@ -263,12 +285,29 @@ fun AppNavHost() {
                         budgetVm = budgetVm,
                         expensesVm = vm,
                         onNew = { nav.navigate("budget/new") },
+                        onBudgetClicked = { nav.navigate("budget/${it.id}/edit") }
                     )
                 }
 
-                composable("budget/new") { PlaceholderScreen("Nuevo presupuesto") }
+                composable("budget/new") {
+                    BudgetCreateScreen(
+                        budgetVm = budgetVm,
+                        expensesVm = vm,
+                        onSaved = { nav.popBackStack() },
+                        onCancel = { nav.popBackStack() }
+                    )
+                }
 
-
+                composable("budget/{id}/edit") { backStack ->
+                    val id = backStack.arguments?.getString("id") ?: return@composable
+                    BudgetEditScreen(
+                        budgetVm = budgetVm,
+                        expensesVm = vm,
+                        budgetId = id,
+                        onSaved = { nav.popBackStack() },
+                        onCancel = { nav.popBackStack() }
+                    )
+                }
 
                 composable(Dest.Metrics.route) {
                     MetricsScreen(expenseVm = vm)
@@ -279,11 +318,12 @@ fun AppNavHost() {
 
                     OcrReviewScreen(
                         ocrVm,
+                        expensesVm = vm,
                         onConfirmed = {
-                            // Refrescar gastos y actualizar widget
                             vm.refreshAll()
+                            budgetVm.refresh()
                             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                                kotlinx.coroutines.delay(500) // Esperar a que se carguen los datos
+                                kotlinx.coroutines.delay(500)
                                 vm.saveWidgetData(context)
                             }
 

@@ -4,10 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.utn.frba.expendinator.data.remote.ApiClient
 import ar.edu.utn.frba.expendinator.model.dto.BudgetUsageResponse
+import ar.edu.utn.frba.expendinator.model.dto.CreateBudgetRequest
+import ar.edu.utn.frba.expendinator.model.dto.UpdateBudgetRequest
 import ar.edu.utn.frba.expendinator.models.BudgetPeriod
 import ar.edu.utn.frba.expendinator.models.Category
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -72,4 +80,67 @@ class BudgetViewModel : ViewModel() {
             }
         }
     }
+
+    suspend fun createBudget(
+        categoryId: Int,
+        limitAmount: Double,
+        period: BudgetPeriod,
+        startDate: String,
+        endDate: String
+    ): Boolean {
+        return try {
+            val req = CreateBudgetRequest(
+                category_id = categoryId,
+                limit_amount = limitAmount,
+                period = period.name,
+                start_date = startDate,
+                end_date = endDate
+            )
+
+            val response = client.post("$baseUrl/budgets") {
+                contentType(ContentType.Application.Json)
+                setBody(req)
+            }
+
+            if (!response.status.isSuccess()) return false
+
+            refresh()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun updateBudget(
+        budgetId: Int,
+        categoryId: Int,
+        limitAmount: Double,
+        period: BudgetPeriod,
+        startDate: String,
+        endDate: String
+    ): Boolean {
+        return try {
+            val req = UpdateBudgetRequest(
+                category_id = categoryId,
+                limit_amount = limitAmount,
+                period = period.name,
+                start_date = startDate,
+                end_date = endDate
+            )
+
+            val response = client.put("$baseUrl/budgets/$budgetId") {
+                contentType(ContentType.Application.Json)
+                setBody(req)
+            }
+
+            if (!response.status.isSuccess()) return false
+
+            refresh()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getBudgetById(id: String): BudgetUsageUi? = _budgets.value.firstOrNull { it.id == id }
 }

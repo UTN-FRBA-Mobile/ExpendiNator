@@ -1,5 +1,6 @@
 import { CategoryModel } from "../models/Category.js";
 import { ExpenseModel } from "../models/Expense.js";
+import { sanitizeDateInput } from "../utils/date.js";
 export const OcrConfirmController = {
     async confirm(req, res) {
         try {
@@ -12,22 +13,36 @@ export const OcrConfirmController = {
             for (const it of items) {
                 const title = it.title?.trim();
                 const amount = Number(it.amount);
-                const categoryName = it.category || null;
-                const date = it.date || new Date().toISOString().slice(0, 10);
+                const categoryName = it.categoryName || it.category || null;
+                const categoryId = it.categoryId ?? null;
+                const dateCandidate = it.date || new Date().toISOString();
+                let normalizedDate;
+                try {
+                    normalizedDate = sanitizeDateInput(dateCandidate);
+                }
+                catch (err) {
+                    continue;
+                }
                 if (!title || isNaN(amount))
                     continue;
-                let categoryId = null;
-                if (categoryName) {
+                let categoryIdToPersist = null;
+                if (categoryId !== null && categoryId !== undefined) {
+                    const cat = await CategoryModel.findById(userId, Number(categoryId));
+                    if (cat) {
+                        categoryIdToPersist = cat.id;
+                    }
+                }
+                if (!categoryIdToPersist && categoryName) {
                     const cat = await CategoryModel.findByName(userId, categoryName);
                     if (cat)
-                        categoryId = cat.id;
+                        categoryIdToPersist = cat.id;
                 }
                 const newExpense = await ExpenseModel.create({
                     user_id: userId,
                     title,
                     amount,
-                    date,
-                    category_id: categoryId
+                    date: normalizedDate,
+                    category_id: categoryIdToPersist
                 });
                 created.push(newExpense);
             }

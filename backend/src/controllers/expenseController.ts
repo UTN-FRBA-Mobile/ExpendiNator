@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ExpenseModel } from "../models/Expense.js";
+import { sanitizeDateInput } from "../utils/date.js";
 
 export const ExpenseController = {
   async getAll(req: Request, res: Response) {
@@ -22,11 +23,18 @@ export const ExpenseController = {
           .json({ error: "Título, monto y fecha son requeridos" });
       }
 
+      let normalizedDate: string;
+      try {
+        normalizedDate = sanitizeDateInput(date);
+      } catch (err) {
+        return res.status(400).json({ error: "Fecha inválida" });
+      }
+
       const expense = await ExpenseModel.create({
         user_id: req.userId!,
         title,
         amount,
-        date,
+        date: normalizedDate,
         category_id: category_id || null,
       });
 
@@ -61,6 +69,13 @@ export const ExpenseController = {
           .json({ error: "title, amount y date son requeridos" });
       }
 
+      let normalizedDate: string;
+      try {
+        normalizedDate = sanitizeDateInput(date);
+      } catch (err) {
+        return res.status(400).json({ error: "Fecha inválida" });
+      }
+
       const existing = await ExpenseModel.findByIdForUser(id, userId);
       if (!existing)
         return res.status(404).json({ error: "Gasto no encontrado" });
@@ -70,7 +85,7 @@ export const ExpenseController = {
         user_id: userId,
         title,
         amount,
-        date,
+        date: normalizedDate,
         category_id: category_id ?? null,
       });
 

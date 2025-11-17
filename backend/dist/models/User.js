@@ -6,9 +6,10 @@ export const UserModel = {
         return result || null;
     },
     async create(user) {
-        await pool.query("INSERT INTO users (email, password) VALUES (?, ?)", [
-            user.email,
-            user.password,
-        ]);
+        const [result] = await pool.query("INSERT INTO users (email, password) VALUES (?, ?)", [user.email, user.password]);
+        return result.insertId;
+    },
+    async deleteById(id) {
+        await pool.query("DELETE FROM users WHERE id = ?", [id]);
     },
 };

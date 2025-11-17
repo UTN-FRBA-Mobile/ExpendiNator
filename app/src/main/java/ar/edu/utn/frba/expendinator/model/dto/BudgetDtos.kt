@@ -24,3 +24,32 @@ data class BudgetUsageResponse(
     val over: Boolean,
     val category: BudgetUsageCategoryDto
 )
+
+@Serializable
+data class CreateBudgetRequest(
+    val category_id: Int,
+    val limit_amount: Double,
+    val period: String,
+    val start_date: String,
+    val end_date: String
+)
+
+@Serializable
+data class UpdateBudgetRequest(
+    val category_id: Int,
+    val limit_amount: Double,
+    val period: String,
+    val start_date: String,
+    val end_date: String
+)
+
+@Serializable
+data class BudgetResponse(
+    val id: Int,
+    val category_id: Int,
+    val limit_amount: Double,
+    val period: String,
+    val start_date: String,
+    val end_date: String,
+    val category: BudgetUsageCategoryDto
+)

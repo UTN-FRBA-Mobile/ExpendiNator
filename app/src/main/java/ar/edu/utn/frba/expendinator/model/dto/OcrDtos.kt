@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 data class OcrItem(
     var title: String,
     var amount: Double,
-    var category: String? = null,
+    var categoryId: Int? = null,
+    var categoryName: String? = null,
     var date: String
 )
 
